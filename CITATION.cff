@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: If you use this code, cite it.
+title: contract-quaternion-interpolation, property checks of Godot's quaternion interpolation
+abstract: >-
+  A Lean 4 Float model of Godot's spherical cubic, cubic-in-time and makima
+  quaternion interpolation, before godot PR 124915, as that PR was written, and
+  with two fixes. Plausible generates inputs and checks ten properties on each
+  model. The fixed model must hold them all; the other two must fail, so the
+  checks are shown to be able to fail. The run also writes a Godot doctest file
+  of the failing inputs.
+authors:
+  - given-names: K. S. Ernest
+    family-names: Lee
+    alias: iFire
+repository-code: https://github.com/V-Sekai-fire/contract-quaternion-interpolation
+license: MIT
+keywords:
+  - Lean 4
+  - Plausible
+  - property-based testing
+  - quaternion
+  - Godot
