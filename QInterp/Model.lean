@@ -1,8 +1,9 @@
 /-
 A Float port of the Godot code under test. Each definition names the C++ function it follows.
 `Old` is the tree before "Make Quaternion cubic/makima interpolation more stable" (godot PR 124915).
-`New` is the tree after it. `New` with `fix := true` also normalizes the pre-blend quaternion and
-uses `cubicInTimeFixed`, the two changes the properties in QInterp/Props.lean require.
+`New` is the tree after it, as written by the patch (which normalizes the pre-blend quaternion).
+`New` with `fix := true` additionally uses `cubicInTimeFixed`, the extra change the properties in
+QInterp/Props.lean require.
 -/
 namespace QInterp
 
@@ -262,21 +263,20 @@ def sciInTime (a b pre post : Q) (w bT preT postT : Float) : Q :=
 end Old
 
 namespace New
-def oneSided (fix : Bool) (interp : Q → Q → Q → Q → Q) (fromQ toQ preQ postQ : Q) (w : Float) : Q :=
-  let blendQ := fromQ.slerp toQ w
-  let blendQ := if fix then blendQ.normalized else blendQ
+def oneSided (interp : Q → Q → Q → Q → Q) (fromQ toQ preQ postQ : Q) (w : Float) : Q :=
+  let blendQ := (fromQ.slerp toQ w).normalized
   let bi := blendQ.inverse
   let ln := interp (bi * fromQ).log (bi * toQ).log (bi * preQ).log (bi * postQ).log
   blendQ * ln.exp
 
-def sci (fix : Bool) (a b pre post : Q) (w : Float) : Q :=
+def sci (a b pre post : Q) (w : Float) : Q :=
   let (f, t, p, q) := align4 a b pre post
-  oneSided fix (lift3 (fun x y z u => cubic x y z u w)) f t p q w
+  oneSided (lift3 (fun x y z u => cubic x y z u w)) f t p q w
 
 def sciInTime (fix : Bool) (a b pre post : Q) (w bT preT postT : Float) : Q :=
   let (f, t, p, q) := align4 a b pre post
   let cit := if fix then cubicInTimeFixed else cubicInTime
-  oneSided fix (lift3 (fun x y z u => cit x y z u w bT preT postT)) f t p q w
+  oneSided (lift3 (fun x y z u => cit x y z u w bT preT postT)) f t p q w
 end New
 
 /-- The six-key prelude of Animation::spherical_makima_interpolate_in_time. -/
@@ -324,11 +324,10 @@ def Old.makima (a b pre post prePre postPost : Q) (w : Float) (tm : Times) : Q :
   let toLn := m lnFrom2 Q.zero lnPre2 lnPost2 ((t.inverse * pp).getNearestLog lnPre2) ((t.inverse * qq).getNearestLog lnPost2)
   Old.blendLog f fromLn toLn lnTo w
 
-def New.makima (fix : Bool) (a b pre post prePre postPost : Q) (w : Float) (tm : Times) : Q :=
+def New.makima (a b pre post prePre postPost : Q) (w : Float) (tm : Times) : Q :=
   let (f, t, p, q, pp, qq) := align6 a b pre post prePre postPost
   let m := lift6 (fun x0 x1 x2 x3 x4 x5 => makimaInTime x0 x1 x2 x3 x4 x5 w tm.toT tm.preT tm.postT tm.prePreT tm.postPostT)
-  let blendQ := f.slerp t w
-  let blendQ := if fix then blendQ.normalized else blendQ
+  let blendQ := (f.slerp t w).normalized
   let bi := blendQ.inverse
   let lnPre := (bi * p).log
   let lnPost := (bi * q).log

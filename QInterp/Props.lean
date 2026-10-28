@@ -158,14 +158,14 @@ def Fn.all : List Fn := [.sci, .sciInTime, .makima]
 def run (i : Impl) (f : Fn) (prePre pre a b post postPost : Q) (w : Float) (tm : Times) : Q :=
   match i, f with
   | .old, .sci => Old.sci a b pre post w
-  | .patch, .sci => New.sci false a b pre post w
-  | .fixed, .sci => New.sci true a b pre post w
+  | .patch, .sci => New.sci a b pre post w
+  | .fixed, .sci => New.sci a b pre post w
   | .old, .sciInTime => Old.sciInTime a b pre post w tm.toT tm.preT tm.postT
   | .patch, .sciInTime => New.sciInTime false a b pre post w tm.toT tm.preT tm.postT
   | .fixed, .sciInTime => New.sciInTime true a b pre post w tm.toT tm.preT tm.postT
   | .old, .makima => Old.makima a b pre post prePre postPost w tm
-  | .patch, .makima => New.makima false a b pre post prePre postPost w tm
-  | .fixed, .makima => New.makima true a b pre post prePre postPost w tm
+  | .patch, .makima => New.makima a b pre post prePre postPost w tm
+  | .fixed, .makima => New.makima a b pre post prePre postPost w tm
 
 def runC (i : Impl) (f : Fn) (c : Case) (w : Float := c.w) (tm : Times := c.tm) : Q :=
   run i f c.prePre c.pre c.a c.b c.post c.postPost w tm

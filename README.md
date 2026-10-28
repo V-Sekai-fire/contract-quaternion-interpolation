@@ -11,8 +11,8 @@ It has three versions:
 | Version | Code |
 | --- | --- |
 | `old` | before godot PR 124915, "Make Quaternion cubic/makima interpolation more stable" |
-| `patch` | the PR as written |
-| `fixed` | the PR plus two fixes: normalize the pre-blend `slerp`, and make `cubic_interpolate_in_time` return `from` and `to` at its ends when key times coincide |
+| `patch` | the PR as written (the patch file): single-sided expmap, normalized pre-blend `slerp` |
+| `fixed` | the patch plus the one change the properties require: `cubic_interpolate_in_time` returns `from` and `to` at its ends when key times coincide |
 
 `QInterp/Props.lean` generates inputs and states the properties. Most inputs are smooth key
 tracks, as an animation holds. The rest are tracks with random signs, fast spins, nearly equal
@@ -45,7 +45,8 @@ The run is deterministic. It writes `out/`:
   that are large enough to show at float `real_t`, up to 5 per function, property, family and version
 
 It exits 1 if the `fixed` version fails anything, or if a control finds nothing: `old` must fail
-reversal, and `patch` must fail unit, endpoint0 and endpoint1.
+reversal, and `patch` must fail `endpoint0` and `endpoint1` (normalizing the pre-blend also makes
+`patch` pass `unit`).
 
 ## Results (20000 cases)
 
@@ -53,8 +54,8 @@ reversal, and `patch` must fail unit, endpoint0 and endpoint1.
 | --- | --- | --- | --- |
 | reversal | 8856 / 9287 / 9006 (cubic / in time / makima), error up to 1.39 | 0 | 0 |
 | geodesic | 20 per function, error up to 5e-6 | 0 | 0 |
-| unit | 0 | 276 per function, error up to 2e-6 | 0 |
-| endpoint0 / endpoint1 (in time) | 951 / 1001, error up to 1.41 | 951 / 1001 | 0 |
+| unit | 0 | 0 | 0 |
+| endpoint0 / endpoint1 (in time) | 951 / 1001 | 951 / 1001 | 0 |
 
 The generated C++ file is `tests/core/math/test_quaternion_interpolation_lean.cpp` on
 [V-Sekai-fire/entities-godot `feat/quaternion-stable-cubic-interp`](https://github.com/V-Sekai-fire/entities-godot/tree/feat/quaternion-stable-cubic-interp),

@@ -255,7 +255,7 @@ def main (args : List String) : IO UInt32 := do
   if fixedFails.size > 0 || plausibleFixed.size > 0 then
     IO.eprintln s!"FAIL: fixed model fails {fixedFails.size} sweep cases and {plausibleFixed.size} Plausible searches"
     ok := false
-  for (i, p) in [(Impl.old, Prop_.reversal), (Impl.patch, Prop_.unit), (Impl.patch, Prop_.endpoint0), (Impl.patch, Prop_.endpoint1)] do
+  for (i, p) in [(Impl.old, Prop_.reversal), (Impl.patch, Prop_.endpoint0), (Impl.patch, Prop_.endpoint1)] do
     if !failed i p then
       IO.eprintln s!"FAIL: control {i.name} {p.name} found no failure, so the check cannot fail"
       ok := false
